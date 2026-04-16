@@ -1,9 +1,702 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track your studies with tasks, focus mode, and achievements">
+    <meta name="theme-color" content="#000000">
+    <title>Study Dashboard</title>
+    <link rel="icon" type="image/png" href="3958cc36-2630-4e5a-8fb9-170c2cbcf3dc.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
 <body>
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-card">
+            <h1>Study Dashboard</h1>
+            <p>Sign in to track your studies</p>
+            <button id="google-signin" class="btn btn-primary">Continue with Google</button>
+            <div class="divider">or</div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="signin">Sign In</button>
+                <button class="auth-tab" data-tab="register">Create Account</button>
+            </div>
+            <form id="email-signin-form" class="auth-form active">
+                <input type="email" id="email-input" placeholder="Email" class="input">
+                <input type="password" id="password-input" placeholder="Password" class="input">
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </form>
+            <form id="email-register-form" class="auth-form">
+                <input type="email" id="register-email-input" placeholder="Email" class="input">
+                <input type="password" id="register-password-input" placeholder="Password" class="input">
+                <input type="password" id="register-confirm-input" placeholder="Confirm Password" class="input">
+                <button type="submit" class="btn btn-primary">Create Account</button>
+            </form>
+        </div>
+    </div>
 
-<h1>My First Heading</h1>
-<p>My first paragraph.</p>
+    <div id="dashboard" class="dashboard hidden">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Study</h2>
+                <button id="theme-toggle" class="theme-toggle" title="Toggle Dark Mode">🌙</button>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">⊞</span>
+                    <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-item" data-page="tasks">
+                    <span class="nav-icon">✓</span>
+                    <span class="nav-text">Tasks</span>
+                </button>
+                <button class="nav-item" data-page="subjects">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-text">Subjects</span>
+                </button>
+                <button class="nav-item" data-page="shortcuts">
+                    <span class="nav-icon">⚡</span>
+                    <span class="nav-text">Shortcuts</span>
+                </button>
+                <button class="nav-item" data-page="focus">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-text">Focus Mode</span>
+                </button>
+                <button class="nav-item" data-page="analytics">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Analytics</span>
+                </button>
+                <button class="nav-item" data-page="notes">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-text">Notes</span>
+                </button>
+                <button class="nav-item" data-page="achievements">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-text">Achievements</span>
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-item" data-page="goals">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-text">Goals</span>
+                </button>
+                <button class="nav-item" data-page="profile">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Profile</span>
+                </button>
+                <button class="nav-item" data-page="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </button>
+                <button class="nav-item" data-page="recycle">
+                    <span class="nav-icon">🗑️</span>
+                    <span class="nav-text">Recycle Bin</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <span id="user-name" style="font-size: 12px; margin-bottom: 8px;"></span>
+                <div class="user-info">
+                    <span id="user-level">Level 1</span>
+                    <div class="xp-bar"><div id="xp-progress" class="xp-fill"></div></div>
+                    <span id="user-xp">0 XP</span>
+                </div>
+                <button id="signout" class="btn btn-small">Sign Out</button>
+            </div>
+        </aside>
 
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <span class="page-title">Dashboard</span>
+                </div>
+                <div class="header-center">
+                    <div id="clock" class="clock">00:00:00</div>
+                    <span class="separator">|</span>
+                    <div id="date" class="date">Loading...</div>
+                    <span class="separator">|</span>
+                    <span class="urgency-label">TASK:</span>
+                    <span id="urgent-task">None</span>
+                </div>
+                <div class="header-right">
+                    <button id="enable-notifications" class="btn btn-small" title="Enable Notifications">🔔</button>
+                </div>
+            </header>
+
+            <div id="page-dashboard" class="page active">
+                <div class="dashboard-overview">
+                    <div class="dashboard-main">
+                        <div class="card tasks-preview-card">
+                            <div class="overview-header">
+                                <h3>Tasks</h3>
+                                <button class="btn btn-small" onclick="navigateTo('tasks')">View All</button>
+                            </div>
+                            <div id="dashboard-tasks-preview" class="tasks-preview-list"></div>
+                        </div>
+
+                        <div class="dashboard-center">
+                            <div class="card sticky-notes-card">
+                                <div class="overview-header">
+                                    <h3>Quick Notes</h3>
+                                </div>
+                                <textarea id="sticky-note-input" class="sticky-note-textarea" placeholder="Write a quick note..."></textarea>
+                                <button class="btn btn-small" id="save-sticky-note">Save Note</button>
+                                <div id="sticky-notes-list" class="sticky-notes-list"></div>
+                            </div>
+
+                            <div class="card affirmation-card">
+                                <div class="overview-header">
+                                    <h3>Daily Affirmation</h3>
+                                </div>
+                                <p id="affirmation-text" class="affirmation-text">Loading...</p>
+                            </div>
+                        </div>
+
+                        <div class="card mini-timer-card">
+                            <div class="overview-header">
+                                <h3>Focus Timer</h3>
+                                <button class="btn btn-small" onclick="navigateTo('focus')">Full Mode</button>
+                            </div>
+                            <div class="mini-timer-display">
+                                <span id="dash-timer-min">25</span>:<span id="dash-timer-sec">00</span>
+                            </div>
+                            <div class="mini-timer-controls">
+                                <button id="dash-timer-start" class="btn btn-small btn-primary">Start</button>
+                                <button id="dash-timer-pause" class="btn btn-small">Pause</button>
+                                <button id="dash-timer-reset" class="btn btn-small">Reset</button>
+                            </div>
+                            <div class="mini-timer-modes">
+                                <button class="timer-mode-sm" data-min="15">15m</button>
+                                <button class="timer-mode-sm active" data-min="25">25m</button>
+                                <button class="timer-mode-sm" data-min="45">45m</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overview-grid">
+                        <div class="card overview-card">
+                            <div class="overview-header">
+                                <h3>Study Streak</h3>
+                            </div>
+                            <div class="streak-display">
+                                <span id="streak-fire" class="streak-fire">🔥</span>
+                                <span id="streak-count" class="streak-count">0</span>
+                                <span class="streak-label">day streak</span>
+                            </div>
+                            <div class="weekly-graph" id="weekly-graph"></div>
+                        </div>
+
+                        <div class="card overview-card">
+                            <div class="overview-header">
+                                <h3>Recent Notes</h3>
+                                <button class="btn btn-small" onclick="navigateTo('notes')">View All</button>
+                            </div>
+                            <div id="dashboard-notes-preview" class="overview-content"></div>
+                        </div>
+
+                        <div class="card overview-card analytics-overview">
+                            <div class="overview-header">
+                                <h3>Analytics</h3>
+                            </div>
+                            <div class="mini-stats">
+                                <div class="mini-stat">
+                                    <span class="mini-stat-value" id="dash-today-focus">0m</span>
+                                    <span class="mini-stat-label">Today</span>
+                                </div>
+                                <div class="mini-stat">
+                                    <span class="mini-stat-value" id="dash-week-focus">0m</span>
+                                    <span class="mini-stat-label">This Week</span>
+                                </div>
+                                <div class="mini-stat">
+                                    <span class="mini-stat-value" id="dash-tasks-done">0</span>
+                                    <span class="mini-stat-label">Tasks Done</span>
+                                </div>
+                                <div class="mini-stat">
+                                    <span class="mini-stat-value" id="dash-xp">0</span>
+                                    <span class="mini-stat-label">XP</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-tasks" class="page">
+                <div class="tasks-full">
+                    <div class="card">
+                        <h3>Task Manager</h3>
+                        <form id="task-form" class="task-form">
+                            <input type="text" id="task-title" placeholder="Task Title" class="input">
+                            <select id="task-subject" class="input">
+                                <option value="">Subject</option>
+                            </select>
+                            <input type="date" id="task-date" class="input">
+                            <input type="time" id="task-time" class="input">
+                            <select id="task-priority" class="input">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                            <input type="number" id="task-est-time" placeholder="Est. (min)" class="input" min="1">
+                            <button type="submit" class="btn btn-primary">Add Task</button>
+                        </form>
+                        <div class="filter-bar">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="today">Today</button>
+                            <button class="filter-btn" data-filter="overdue">Overdue</button>
+                            <button class="filter-btn" data-filter="completed">Completed</button>
+                        </div>
+                        <div id="task-list" class="task-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-subjects" class="page">
+                <div class="subjects-header">
+                    <h3>Subjects & Topics</h3>
+                    <button id="add-subject-btn" class="btn btn-primary">+ Add Subject</button>
+                </div>
+                <div id="subjects-list" class="subjects-grid"></div>
+            </div>
+
+            <div id="page-shortcuts" class="page">
+                <div class="shortcuts-header">
+                    <h3>Shortcuts</h3>
+                    <select id="shortcut-category" class="input">
+                        <option value="all">All</option>
+                        <option value="study">Study</option>
+                        <option value="tools">Tools</option>
+                        <option value="entertainment">Entertainment</option>
+                    </select>
+                </div>
+                <form id="shortcut-form" class="shortcut-form">
+                    <input type="text" id="shortcut-name" placeholder="Name" class="input">
+                    <input type="url" id="shortcut-url" placeholder="URL" class="input">
+                    <select id="shortcut-cat" class="input">
+                        <option value="study">Study</option>
+                        <option value="tools">Tools</option>
+                        <option value="entertainment">Entertainment</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Add Shortcut</button>
+                </form>
+                <div id="shortcut-grid" class="shortcut-grid"></div>
+            </div>
+
+            <div id="page-focus" class="page">
+                <div class="focus-container">
+                    <div class="focus-left">
+                        <div class="focus-tasks-card">
+                            <h3>Tasks to Focus On</h3>
+                            <div class="focus-filters">
+                                <select id="focus-subject-filter" class="input">
+                                    <option value="">All Subjects</option>
+                                </select>
+                            </div>
+                            <div id="focus-task-list" class="focus-task-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="focus-right">
+                        <div class="pomodoro-card">
+                            <h3>Pomodoro Timer</h3>
+                            <div class="current-task-display" id="current-task-display">Select a task to focus on</div>
+                            <div class="timer-display">
+                                <button id="timer-dec" class="timer-adjust">-</button>
+                                <div class="timer-time">
+                                    <span id="timer-minutes">25</span>:<span id="timer-seconds">00</span>
+                                </div>
+                                <button id="timer-inc" class="timer-adjust">+</button>
+                            </div>
+                            <div class="timer-controls">
+                                <button id="timer-start" class="btn btn-primary">Start</button>
+                                <button id="timer-pause" class="btn">Pause</button>
+                                <button id="timer-reset" class="btn">Reset</button>
+                            </div>
+                            <div class="timer-modes">
+                                <button class="timer-mode" data-minutes="15">15 min</button>
+                                <button class="timer-mode active" data-minutes="25">25 min</button>
+                                <button class="timer-mode" data-minutes="45">45 min</button>
+                                <button class="timer-mode" data-minutes="60">60 min</button>
+                            </div>
+                            <div class="custom-timer">
+                                <input type="number" id="custom-minutes" placeholder="Custom" class="input" min="1" max="180">
+                                <button id="set-custom" class="btn">Set</button>
+                            </div>
+                            <div class="session-stats">
+                                <span>Today: <strong id="today-focus-time">0m</strong></span>
+                                <span>Week: <strong id="week-focus-time">0m</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="ambient-card">
+                            <h3>Ambient Sounds</h3>
+                            <div class="ambient-volume">
+                                <label>Volume:</label>
+                                <input type="range" id="ambient-volume" min="0" max="100" value="50">
+                                <span id="ambient-volume-display">50%</span>
+                            </div>
+                            <div class="ambient-controls">
+                                <button id="ambient-rain" class="btn">Rain 🌧️</button>
+                                <button id="ambient-ocean" class="btn">Ocean 🌊</button>
+                                <button id="ambient-forest" class="btn">Forest 🌲</button>
+                                <button id="ambient-fire" class="btn">Fire 🔥</button>
+                                <button id="ambient-cafe" class="btn">Cafe ☕</button>
+                                <button id="ambient-white" class="btn">White Noise 📺</button>
+                                <button id="ambient-8d" class="btn">8D 🎧</button>
+                                <button id="ambient-phonk" class="btn">Phonk 🔥</button>
+                                <button id="ambient-stop" class="btn btn-danger">Stop</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-analytics" class="page">
+                <div class="analytics-grid">
+                    <div class="card analytics-card">
+                        <h3>Study Time</h3>
+                        <div class="stat-big">
+                            <span id="total-study-time">0h 0m</span>
+                            <span class="stat-label">Total This Week</span>
+                        </div>
+                        <div class="study-graph" id="study-graph"></div>
+                    </div>
+                    
+                    <div class="card analytics-card">
+                        <h3>Subject Breakdown</h3>
+                        <div id="subject-chart" class="subject-chart"></div>
+                    </div>
+                    
+                    <div class="card analytics-card">
+                        <h3>Top Stats</h3>
+                        <div class="top-stats">
+                            <div class="stat-item">
+                                <span class="stat-value" id="tasks-completed">0</span>
+                                <span class="stat-label">Tasks Completed</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="best-streak">0</span>
+                                <span class="stat-label">Best Streak</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="total-xp">0</span>
+                                <span class="stat-label">Total XP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card analytics-card">
+                        <h3>Session History</h3>
+                        <div id="session-history" class="session-history"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-achievements" class="page">
+                <div class="achievements-grid" id="achievements-grid"></div>
+            </div>
+
+            <div id="page-notes" class="page">
+                <div class="notes-full">
+                    <div class="card">
+                        <h3>Notes</h3>
+                        <form id="note-form" class="note-form">
+                            <input type="text" id="note-title" placeholder="Note Title" class="input">
+                            <textarea id="note-content" placeholder="Write your note here..." class="input"></textarea>
+                            <select id="note-subject" class="input">
+                                <option value="">Subject</option>
+                            </select>
+                            <div class="color-picker">
+                                <input type="color" id="note-color" value="#3B82F6" class="color-input">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Note</button>
+                        </form>
+                        <div class="notes-toolbar">
+                            <input type="text" id="note-search" placeholder="Search notes..." class="input search-input">
+                            <button class="btn btn-small" id="pin-notes">📌 Show Pinned</button>
+                        </div>
+                        <div id="note-list" class="note-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-goals" class="page">
+                <div class="goals-page">
+                    <div class="goals-grid">
+                        <div class="card">
+                            <h3>Daily Goals</h3>
+                            <div class="goal-item">
+                                <label>Tasks to Complete</label>
+                                <div class="goal-input">
+                                    <input type="number" id="goal-daily-tasks" min="1" max="50" value="5">
+                                    <span class="goal-progress" id="goal-daily-tasks-progress">0/5</span>
+                                </div>
+                                <div class="goal-bar"><div class="goal-fill" id="goal-daily-tasks-fill"></div></div>
+                            </div>
+                            <div class="goal-item">
+                                <label>Focus Time (minutes)</label>
+                                <div class="goal-input">
+                                    <input type="number" id="goal-daily-focus" min="10" max="300" value="60">
+                                    <span class="goal-progress" id="goal-daily-focus-progress">0m/60m</span>
+                                </div>
+                                <div class="goal-bar"><div class="goal-fill" id="goal-daily-focus-fill"></div></div>
+                            </div>
+                            <div class="goal-item">
+                                <label>Notes to Create</label>
+                                <div class="goal-input">
+                                    <input type="number" id="goal-daily-notes" min="1" max="20" value="3">
+                                    <span class="goal-progress" id="goal-daily-notes-progress">0/3</span>
+                                </div>
+                                <div class="goal-bar"><div class="goal-fill" id="goal-daily-notes-fill"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Weekly Goals</h3>
+                            <div class="goal-item">
+                                <label>Tasks to Complete</label>
+                                <div class="goal-input">
+                                    <input type="number" id="goal-weekly-tasks" min="1" max="100" value="25">
+                                    <span class="goal-progress" id="goal-weekly-tasks-progress">0/25</span>
+                                </div>
+                                <div class="goal-bar"><div class="goal-fill" id="goal-weekly-tasks-fill"></div></div>
+                            </div>
+                            <div class="goal-item">
+                                <label>Focus Time (hours)</label>
+                                <div class="goal-input">
+                                    <input type="number" id="goal-weekly-focus" min="1" max="50" value="10">
+                                    <span class="goal-progress" id="goal-weekly-focus-progress">0h/10h</span>
+                                </div>
+                                <div class="goal-bar"><div class="goal-fill" id="goal-weekly-focus-fill"></div></div>
+                            </div>
+                            <div class="goal-item">
+                                <label>Study Streak (days)</label>
+                                <div class="goal-input">
+                                    <input type="number" id="goal-weekly-streak" min="1" max="7" value="5">
+                                    <span class="goal-progress" id="goal-weekly-streak-progress">0/5</span>
+                                </div>
+                                <div class="goal-bar"><div class="goal-fill" id="goal-weekly-streak-fill"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="card goals-status">
+                            <h3>Today's Progress</h3>
+                            <div class="goals-summary">
+                                <div class="summary-item">
+                                    <span class="summary-value" id="summary-tasks">0</span>
+                                    <span class="summary-label">Tasks Done</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-value" id="summary-focus">0m</span>
+                                    <span class="summary-label">Focus Time</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-value" id="summary-notes">0</span>
+                                    <span class="summary-label">Notes</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-value" id="summary-streak">0</span>
+                                    <span class="summary-label">Day Streak</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" id="save-goals-btn">Save Goals</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-profile" class="page">
+                <div class="profile-page">
+                    <div class="card profile-card-full">
+                        <h3>My Profile</h3>
+                        <div class="profile-content">
+                            <div class="profile-left">
+                                <div class="profile-avatar-lg" id="profile-avatar-lg">👤</div>
+                                <div class="profile-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-value" id="profile-level">Level 1</span>
+                                        <span class="stat-label">Level</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value" id="profile-xp">0</span>
+                                        <span class="stat-label">XP</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value" id="profile-streak">0</span>
+                                        <span class="stat-label">Day Streak</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="profile-right">
+                                <div class="profile-field">
+                                    <label>Name</label>
+                                    <input type="text" id="profile-name" placeholder="Your name" class="input">
+                                </div>
+                                <div class="profile-field-row">
+                                    <div class="profile-field">
+                                        <label>Age</label>
+                                        <input type="number" id="profile-age" placeholder="Age" min="1" max="120" class="input">
+                                    </div>
+                                    <div class="profile-field">
+                                        <label>Grade/Year</label>
+                                        <input type="text" id="profile-grade" placeholder="e.g. Grade 10" class="input">
+                                    </div>
+                                </div>
+                                <div class="profile-field">
+                                    <label>School/University</label>
+                                    <input type="text" id="profile-school" placeholder="School or University name" class="input">
+                                </div>
+                                <div class="profile-field">
+                                    <label>Bio</label>
+                                    <textarea id="profile-bio" placeholder="Tell us about yourself..." class="input" rows="3"></textarea>
+                                </div>
+                                <div class="profile-field">
+                                    <label>Goals for this year</label>
+                                    <textarea id="profile-goals" placeholder="What do you want to achieve?" class="input" rows="2"></textarea>
+                                </div>
+                                <button class="btn btn-primary" id="save-profile-btn">Save Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-settings" class="page">
+                <div class="settings-page">
+                    <div class="settings-grid">
+                        <div class="card">
+                            <h3>Timer Presets</h3>
+                            <div class="preset-item">
+                                <label>Preset 1</label>
+                                <input type="number" id="preset-1" min="1" max="180" value="15"> min
+                            </div>
+                            <div class="preset-item">
+                                <label>Preset 2</label>
+                                <input type="number" id="preset-2" min="1" max="180" value="25"> min
+                            </div>
+                            <div class="preset-item">
+                                <label>Preset 3</label>
+                                <input type="number" id="preset-3" min="1" max="180" value="45"> min
+                            </div>
+                            <div class="preset-item">
+                                <label>Preset 4</label>
+                                <input type="number" id="preset-4" min="1" max="180" value="60"> min
+                            </div>
+                            <button class="btn btn-primary" id="save-presets-btn">Save Presets</button>
+                        </div>
+
+                        <div class="card">
+                            <h3>Themes</h3>
+                            <div class="theme-options">
+                                <button class="theme-btn" data-theme="light" style="background: #fff; color: #000;">Light</button>
+                                <button class="theme-btn" data-theme="dark" style="background: #1a1a1a; color: #fff;">Dark</button>
+                                <button class="theme-btn" data-theme="midnight" style="background: #0a0a1a; color: #4a90d9;">Midnight</button>
+                                <button class="theme-btn" data-theme="ocean" style="background: #1a2a3a; color: #64b5f6;">Ocean</button>
+                                <button class="theme-btn" data-theme="forest" style="background: #1a2a1a; color: #81c784;">Forest</button>
+                                <button class="theme-btn" data-theme="sunset" style="background: #2a1a1a; color: #ff8a65;">Sunset</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Data Management</h3>
+                            <div class="data-actions">
+                                <button class="btn btn-primary" id="export-data-btn">Export All Data</button>
+                                <label class="import-label">
+                                    Import Data
+                                    <input type="file" id="import-data-input" accept=".json" class="hidden">
+                                </label>
+                            </div>
+                            <p class="data-info">Export your data as JSON for backup. Import to restore.</p>
+                        </div>
+
+                        <div class="card">
+                            <h3>PWA Installation</h3>
+                            <p>Install this app on your device for offline access</p>
+                            <button class="btn btn-primary" id="install-pwa-btn">Install App</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-recycle" class="page">
+                <div class="recycle-full">
+                    <div class="card">
+                        <div class="recycle-header">
+                            <h3>Recycle Bin</h3>
+                            <button id="empty-recycle" class="btn btn-danger">Empty Recycle Bin</button>
+                        </div>
+                        <p class="recycle-info">Items are permanently deleted after 30 days</p>
+                        <div id="recycle-list" class="recycle-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="notification-toast" class="notification-toast hidden"></div>
+
+    <div id="edit-task-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Task</h3>
+                <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <form id="edit-task-form">
+                <input type="hidden" id="edit-task-id">
+                <input type="text" id="edit-task-title" placeholder="Task Title" class="input" required>
+                <select id="edit-task-subject" class="input">
+                    <option value="">Subject</option>
+                </select>
+                <input type="date" id="edit-task-date" class="input" required>
+                <input type="time" id="edit-task-time" class="input" required>
+                <select id="edit-task-priority" class="input">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <input type="number" id="edit-task-est-time" placeholder="Est. (min)" class="input" min="1">
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-note-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Note</h3>
+                <button class="modal-close" onclick="closeNoteModal()">&times;</button>
+            </div>
+            <form id="edit-note-form">
+                <input type="hidden" id="edit-note-id">
+                <input type="text" id="edit-note-title" placeholder="Note Title" class="input">
+                <textarea id="edit-note-content" placeholder="Write your note here..." class="input"></textarea>
+                <select id="edit-note-subject" class="input">
+                    <option value="">Subject</option>
+                </select>
+                <div class="color-picker">
+                    <input type="color" id="edit-note-color" class="color-input">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeNoteModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed'));
+            });
+        }
+    </script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

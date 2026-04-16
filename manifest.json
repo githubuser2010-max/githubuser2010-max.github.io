@@ -1,0 +1,22 @@
+{
+  "name": "Study Dashboard",
+  "short_name": "Study",
+  "description": "Track your studies with tasks, focus mode, and achievements",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "3958cc36-2630-4e5a-8fb9-170c2cbcf3dc.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "3958cc36-2630-4e5a-8fb9-170c2cbcf3dc.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
