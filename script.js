@@ -42,7 +42,6 @@ let timerSeconds = 0;
 let timerRunning = false;
 let completedTasksXP = {};
 let unlockedAchievements = [];
-let userProfile = { name: '', age: '', grade: '', school: '', bio: '', goals: '' };
 
 const affirmations = [
     "You're closer than you were yesterday. Keep going.",
@@ -75,135 +74,109 @@ if (localStorage.getItem('theme') === 'dark') {
 
 console.log('Script loaded');
 
-// Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded');
-
-    // Firebase Auth
-    document.getElementById('google-signin').addEventListener('click', async () => {
-        try {
-            console.log('Attempting Google sign in...');
-            await signInWithPopup(auth, provider);
-            console.log('Google sign in successful');
-        } catch (error) {
-            console.error('Google sign in error:', error);
-            showNotification('Error signing in: ' + error.message, 'warning');
-        }
-    });
-
-    // Auth tabs
-    document.querySelectorAll('.auth-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            if (tab.dataset.tab === 'signin') {
-                document.getElementById('email-signin-form').classList.add('active');
-            } else {
-                document.getElementById('email-register-form').classList.add('active');
-            }
-        });
-    });
-
-    document.getElementById('email-signin-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email-input').value;
-        const password = document.getElementById('password-input').value;
-        try {
-            console.log('Attempting email sign in...');
-            await signInWithEmailAndPassword(auth, email, password);
-            console.log('Email sign in successful');
-        } catch (error) {
-            console.error('Sign in error:', error);
-            showNotification('Error signing in: ' + error.message, 'warning');
-        }
-    });
-
-    document.getElementById('email-register-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('register-email-input').value;
-        const password = document.getElementById('register-password-input').value;
-        const confirm = document.getElementById('register-confirm-input').value;
-        
-        if (password !== confirm) {
-            showNotification('Passwords do not match', 'warning');
-            return;
-        }
-        if (password.length < 6) {
-            showNotification('Password must be at least 6 characters', 'warning');
-            return;
-        }
-        
-        try {
-            console.log('Attempting to create account...');
-            await createUserWithEmailAndPassword(auth, email, password);
-            console.log('Account created successfully');
-            showNotification('Account created successfully!', 'success');
-        } catch (error) {
-            console.error('Registration error:', error);
-            showNotification('Error creating account: ' + error.message, 'warning');
-        }
-    });
-
-    document.getElementById('signout').addEventListener('click', async () => {
-        await signOut(auth);
-    });
-
-    // Theme Toggle
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-        const isDark = document.body.dataset.theme === 'dark';
-        document.body.dataset.theme = isDark ? '' : 'dark';
-        document.getElementById('theme-toggle').textContent = isDark ? '🌙' : '☀️';
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    });
-
-    // Auth State
-    onAuthStateChanged(auth, async (user) => {
-        console.log('Auth state changed:', user ? user.uid : 'no user');
-        currentUser = user;
-        if (user) {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            
-            await initializeUserData();
-            startClock();
-            loadData();
-            await loadProfile();
-            updateProfileAvatar();
-            
-            const userNameEl = document.getElementById('user-name');
-            if (userNameEl) {
-                userNameEl.textContent = userProfile.name || user.displayName || user.email;
-            }
-        } else {
-            document.getElementById('auth-screen').classList.remove('hidden');
-            document.getElementById('dashboard').classList.add('hidden');
-            tasks = [];
-            notes = [];
-            shortcuts = [];
-            subjects = [];
-            recycleBin = [];
-            userXP = 0;
-            userLevel = 1;
-            streakData = { count: 0, bestStreak: 0, lastCompleted: null };
-            focusSessions = [];
-            completedTasksXP = {};
-            updateXPDisplay();
-            updateStreakDisplay();
-        }
-    });
-    
-    setupNavigation();
-    setupTaskListeners();
+// Firebase Auth
+document.getElementById('google-signin').addEventListener('click', async () => {
+    try {
+        await signInWithPopup(auth, provider);
+    } catch (error) {
+        console.error('Google sign in error:', error);
+        alert('Error signing in with Google: ' + error.message);
+    }
 });
 
-function setupNoteListeners() { }
-function setupShortcutListeners() { }
-function setupFocusListeners() { }
-function setupAmbientListeners() { }
-function setupSettingsListeners() { }
-function setupProfileListeners() { }
-function setupGoalsListeners() { }
+// Auth tabs
+document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        if (tab.dataset.tab === 'signin') {
+            document.getElementById('email-signin-form').classList.add('active');
+        } else {
+            document.getElementById('email-register-form').classList.add('active');
+        }
+    });
+});
+
+document.getElementById('email-signin-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email-input').value;
+    const password = document.getElementById('password-input').value;
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+        alert('Error signing in: ' + error.message);
+    }
+});
+
+document.getElementById('email-register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('register-email-input').value;
+    const password = document.getElementById('register-password-input').value;
+    const confirm = document.getElementById('register-confirm-input').value;
+    
+    if (password !== confirm) {
+        alert('Passwords do not match');
+        return;
+    }
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters');
+        return;
+    }
+    
+    try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert('Account created successfully!');
+    } catch (error) {
+        alert('Error creating account: ' + error.message);
+    }
+});
+
+document.getElementById('signout').addEventListener('click', async () => {
+    await signOut(auth);
+});
+
+// Theme Toggle
+document.getElementById('theme-toggle').addEventListener('click', () => {
+    const isDark = document.body.dataset.theme === 'dark';
+    document.body.dataset.theme = isDark ? '' : 'dark';
+    document.getElementById('theme-toggle').textContent = isDark ? '🌙' : '☀️';
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+});
+
+// Auth State
+onAuthStateChanged(auth, async (user) => {
+    console.log('Auth state changed:', user ? user.uid : 'no user');
+    currentUser = user;
+    if (user) {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        
+        await initializeUserData();
+        startClock();
+        loadData();
+        
+        const userNameEl = document.getElementById('user-name');
+        if (userNameEl) {
+            userNameEl.textContent = userProfile.name || user.displayName || user.email;
+        }
+    } else {
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('dashboard').classList.add('hidden');
+        tasks = [];
+        notes = [];
+        shortcuts = [];
+        subjects = [];
+        recycleBin = [];
+        userXP = 0;
+        userLevel = 1;
+        streakData = { count: 0, bestStreak: 0, lastCompleted: null };
+        focusSessions = [];
+        completedTasksXP = {};
+        updateXPDisplay();
+        updateStreakDisplay();
+    }
+});
 
 async function initializeUserData() {
     try {
@@ -225,18 +198,16 @@ async function initializeUserData() {
 }
 
 // Navigation
-function setupNavigation() {
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const page = item.dataset.page;
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${page}`).classList.add('active');
-            document.querySelector('.page-title').textContent = item.textContent.trim().split(' ')[0];
-        });
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+        const page = item.dataset.page;
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(`page-${page}`).classList.add('active');
+        document.querySelector('.page-title').textContent = item.textContent.trim().split(' ')[0];
     });
-}
+});
 
 window.navigateTo = function(page) {
     const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
@@ -384,7 +355,8 @@ function loadData() {
     loadGoals();
     loadTimerPresets();
     loadStickyNotes();
-    await loadProfile();
+    loadProfile();
+    loadProfileFromFirestore();
 }
 
 // XP System
@@ -431,79 +403,50 @@ async function updateUserProfile() {
 }
 
 // Task Manager
-function setupTaskListeners() {
-    document.getElementById('task-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!currentUser) return;
-        
-        const title = document.getElementById('task-title').value.trim();
-        const subject = document.getElementById('task-subject').value;
-        const date = document.getElementById('task-date').value;
-        const time = document.getElementById('task-time').value;
-        const priority = document.getElementById('task-priority').value;
-        const estTime = parseInt(document.getElementById('task-est-time').value) || 0;
-        
-        if (!title || !date || !time) {
-            alert('Please fill in title, date, and time');
-            return;
-        }
+document.getElementById('task-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    
+    const title = document.getElementById('task-title').value.trim();
+    const subject = document.getElementById('task-subject').value;
+    const date = document.getElementById('task-date').value;
+    const time = document.getElementById('task-time').value;
+    const priority = document.getElementById('task-priority').value;
+    const estTime = parseInt(document.getElementById('task-est-time').value) || 0;
+    
+    if (!title || !date || !time) {
+        alert('Please fill in title, date, and time');
+        return;
+    }
 
-        try {
-            await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
-                title,
-                subject,
-                date,
-                time,
-                priority,
-                estTime,
-                completed: false,
-                createdAt: Date.now()
-            });
-            console.log('Task added');
-            document.getElementById('task-form').reset();
-        } catch (error) {
-            console.error('Error adding task:', error);
-            alert('Error adding task: ' + error.message);
-        }
-    });
-
-    // Filter buttons
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilterSelection = btn.dataset.filter;
-            renderTasks();
+    try {
+        await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
+            title,
+            subject,
+            date,
+            time,
+            priority,
+            estTime,
+            completed: false,
+            createdAt: Date.now()
         });
-    });
+        console.log('Task added');
+        document.getElementById('task-form').reset();
+    } catch (error) {
+        console.error('Error adding task:', error);
+        alert('Error adding task: ' + error.message);
+    }
+});
 
-    document.getElementById('edit-task-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const taskId = document.getElementById('edit-task-id').value;
-        const title = document.getElementById('edit-task-title').value.trim();
-        const subject = document.getElementById('edit-task-subject').value;
-        const date = document.getElementById('edit-task-date').value;
-        const time = document.getElementById('edit-task-time').value;
-        const priority = document.getElementById('edit-task-priority').value;
-        const estTime = parseInt(document.getElementById('edit-task-est-time').value) || 0;
-        
-        if (!title || !date || !time) {
-            alert('Please fill in title, date, and time');
-            return;
-        }
-        
-        try {
-            await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', taskId), {
-                title, subject, date, time, priority, estTime
-            });
-            closeTaskModal();
-            showNotification('Task updated', 'subtle');
-        } catch (error) {
-            console.error('Error updating task:', error);
-        }
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilterSelection = btn.dataset.filter;
+        renderTasks();
     });
-}
+});
 
 function renderTasks() {
     const container = document.getElementById('task-list');
@@ -619,6 +562,33 @@ window.editTask = function(taskId) {
 function closeTaskModal() {
     document.getElementById('edit-task-modal').classList.add('hidden');
 }
+
+document.getElementById('edit-task-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const taskId = document.getElementById('edit-task-id').value;
+    const title = document.getElementById('edit-task-title').value.trim();
+    const subject = document.getElementById('edit-task-subject').value;
+    const date = document.getElementById('edit-task-date').value;
+    const time = document.getElementById('edit-task-time').value;
+    const priority = document.getElementById('edit-task-priority').value;
+    const estTime = parseInt(document.getElementById('edit-task-est-time').value) || 0;
+    
+    if (!title || !date || !time) {
+        alert('Please fill in title, date, and time');
+        return;
+    }
+    
+    try {
+        await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', taskId), {
+            title, subject, date, time, priority, estTime
+        });
+        closeTaskModal();
+        showNotification('Task updated', 'subtle');
+    } catch (error) {
+        console.error('Error updating task:', error);
+    }
+});
 
 window.deleteTask = async function(taskId) {
     if (confirm('Move this task to Recycle Bin?')) {
@@ -2271,24 +2241,19 @@ document.getElementById('import-data-input')?.addEventListener('change', async (
 });
 
 // Profile System
-async function loadProfile() {
-    if (!currentUser) return;
-    
-    try {
-        const userDataRef = doc(db, 'users', currentUser.uid, 'data', 'profile');
-        const snapshot = await getDoc(userDataRef);
-        
-        if (snapshot.exists()) {
-            const data = snapshot.data();
-            userProfile.name = data.name || '';
-            userProfile.age = data.age || '';
-            userProfile.grade = data.grade || '';
-            userProfile.school = data.school || '';
-            userProfile.bio = data.bio || '';
-            userProfile.goals = data.goals || '';
-        }
-    } catch (error) {
-        console.error('Error loading profile:', error);
+let userProfile = {
+    name: '',
+    age: '',
+    grade: '',
+    school: '',
+    bio: '',
+    goals: ''
+};
+
+function loadProfile() {
+    const saved = localStorage.getItem('userProfile');
+    if (saved) {
+        userProfile = JSON.parse(saved);
     }
     
     document.getElementById('profile-name').value = userProfile.name || '';
@@ -2322,11 +2287,12 @@ function saveProfile() {
     userProfile.bio = document.getElementById('profile-bio').value.trim();
     userProfile.goals = document.getElementById('profile-goals').value.trim();
     
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
     updateProfileAvatar();
     updateProfileStats();
     
     if (currentUser) {
-        await saveProfileToFirestore();
+        saveProfileToFirestore();
     }
     
     showNotification('Profile saved!', 'success');
@@ -2337,10 +2303,32 @@ async function saveProfileToFirestore() {
     try {
         await setDoc(doc(db, 'users', currentUser.uid, 'data', 'profile'), {
             ...userProfile,
-            updatedAt: serverTimestamp()
+            profileSavedAt: Date.now()
         }, { merge: true });
     } catch (error) {
         console.error('Error saving profile to Firestore:', error);
+    }
+}
+
+async function loadProfileFromFirestore() {
+    if (!currentUser) return;
+    try {
+        const userDataRef = doc(db, 'users', currentUser.uid, 'data', 'profile');
+        const snapshot = await getDoc(userDataRef);
+        if (snapshot.exists()) {
+            const data = snapshot.data();
+            if (data.name) userProfile.name = data.name;
+            if (data.age) userProfile.age = data.age;
+            if (data.grade) userProfile.grade = data.grade;
+            if (data.school) userProfile.school = data.school;
+            if (data.bio) userProfile.bio = data.bio;
+            if (data.goals) userProfile.goals = data.goals;
+            
+            localStorage.setItem('userProfile', JSON.stringify(userProfile));
+            loadProfile();
+        }
+    } catch (error) {
+        console.error('Error loading profile from Firestore:', error);
     }
 }
 

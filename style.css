@@ -66,61 +66,45 @@ textarea {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: linear-gradient(135deg, var(--bg) 0%, var(--bg-secondary) 100%);
+    background: var(--bg);
 }
 
 .auth-card {
-    border: none;
-    padding: 48px 40px;
+    border: 2px solid var(--border);
+    padding: 40px;
     text-align: center;
-    max-width: 420px;
+    max-width: 400px;
     width: 100%;
     background: var(--bg);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
 }
 
 .auth-card h1 {
-    font-size: 32px;
-    font-weight: 800;
+    font-size: 28px;
+    font-weight: 700;
     margin-bottom: 8px;
-    letter-spacing: -1px;
 }
 
 .auth-card > p {
     color: var(--text-secondary);
-    margin-bottom: 32px;
-    font-size: 14px;
+    margin-bottom: 24px;
 }
 
 .auth-card .divider {
-    margin: 24px 0;
+    margin: 20px 0;
     color: var(--text-secondary);
     font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.auth-card .divider::before,
-.auth-card .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
 }
 
 .auth-tabs {
     display: flex;
     gap: 0;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     border: 2px solid var(--border);
 }
 
 .auth-tab {
     flex: 1;
-    padding: 14px;
+    padding: 12px;
     border: none;
     background: var(--bg);
     color: var(--text);
@@ -128,7 +112,7 @@ textarea {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .auth-tab:first-child {
@@ -138,13 +122,12 @@ textarea {
 .auth-tab.active {
     background: var(--text);
     color: var(--bg);
-    font-weight: 700;
 }
 
 .auth-form {
     display: none;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .auth-form.active {
@@ -152,22 +135,8 @@ textarea {
 }
 
 .auth-form .input {
-    padding: 16px;
-    font-size: 15px;
-    border: 2px solid var(--border);
-    background: var(--bg);
-    color: var(--text);
-    transition: all 0.2s ease;
-}
-
-.auth-form .input:focus {
-    border-color: var(--text);
-    outline: none;
-}
-
-.auth-form .input::placeholder {
-    color: var(--text-secondary);
-}
+    padding: 14px;
+    font-size: 14px;
     border: 2px solid var(--border);
     background: var(--bg);
     color: var(--text);
