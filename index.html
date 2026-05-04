@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yusuf</title>
+  <meta name="description" content="Yusuf checks in on you every day 💙" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div id="auth-screen" class="screen active">
+    <div class="auth-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="auth-card">
+      <div class="yusuf-logo">
+        <span class="logo-y">Y</span>
+        <span class="logo-name">usuf</span>
+      </div>
+      <p class="auth-tagline">He always asks how you're doing.</p>
+
+      <div id="auth-login" class="auth-form">
+        <h2>Welcome back</h2>
+        <input type="email" id="login-email" placeholder="your email" />
+        <input type="password" id="login-password" placeholder="password" />
+        <button class="btn-primary" onclick="loginUser()">Sign in</button>
+        <div class="auth-switch">New here? <span onclick="showRegister()">Create account</span></div>
+        <div id="login-error" class="error-msg"></div>
+      </div>
+
+      <div id="auth-register" class="auth-form hidden">
+        <h2>Join Yusuf</h2>
+        <input type="text" id="reg-name" placeholder="your first name" />
+        <input type="email" id="reg-email" placeholder="your email" />
+        <input type="password" id="reg-password" placeholder="choose a password" />
+        <button class="btn-primary" onclick="registerUser()">Create account</button>
+        <div class="auth-switch">Already have one? <span onclick="showLogin()">Sign in</span></div>
+        <div id="reg-error" class="error-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App Screen -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="header-logo">Yusuf</span>
+      </div>
+      <div class="header-right">
+        <span id="header-name" class="header-user"></span>
+        <button class="btn-signout" onclick="signOutUser()">↩</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+
+      <!-- Daily Check-In Card -->
+      <div id="checkin-section" class="checkin-card hidden">
+        <div class="checkin-time" id="checkin-time"></div>
+        <div class="checkin-question">
+          <span class="from-yusuf">Yusuf asks,</span>
+          <h1 class="question-text">How's your day been, <span id="user-firstname"></span>?</h1>
+        </div>
+        <div class="mood-quick">
+          <button class="mood-btn" data-mood="amazing" onclick="selectMood(this)">✨ Amazing</button>
+          <button class="mood-btn" data-mood="good" onclick="selectMood(this)">😊 Good</button>
+          <button class="mood-btn" data-mood="alright" onclick="selectMood(this)">😐 Alright</button>
+          <button class="mood-btn" data-mood="tough" onclick="selectMood(this)">😔 Tough</button>
+          <button class="mood-btn" data-mood="rough" onclick="selectMood(this)">💔 Rough</button>
+        </div>
+        <textarea id="day-message" placeholder="Tell Yusuf more… what happened today?" rows="4"></textarea>
+        <button class="btn-send" onclick="submitEntry()">
+          <span>Send to Yusuf</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+        <div id="send-status" class="send-status"></div>
+      </div>
+
+      <!-- Already checked in today -->
+      <div id="done-section" class="done-card hidden">
+        <div class="done-check">✓</div>
+        <h2>Yusuf heard you today.</h2>
+        <p class="done-sub">Check back tomorrow — he'll ask again.</p>
+        <div id="today-entry-preview" class="entry-preview"></div>
+      </div>
+
+      <!-- History -->
+      <div class="history-section">
+        <h3 class="history-title">Your days with Yusuf</h3>
+        <div id="history-list" class="history-list">
+          <div class="history-loading">Loading your days…</div>
+        </div>
+      </div>
+
+      <!-- Reply from Yusuf -->
+      <div id="reply-section" class="reply-section hidden">
+        <div class="reply-badge">💬 Yusuf replied</div>
+        <div id="reply-content" class="reply-content"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- PWA Install Banner -->
+  <div id="install-banner" class="install-banner hidden">
+    <div class="install-text">
+      <strong>Add Yusuf to your home screen</strong>
+      <span>So he can check in every day</span>
+    </div>
+    <button class="install-btn" onclick="installPWA()">Install</button>
+    <button class="install-dismiss" onclick="dismissInstall()">✕</button>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Firebase -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
