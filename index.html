@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Fabric Drive — Personal Cloud & Samba Vault</title>
+  <meta name="theme-color" content="#090b10" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- AUTH GATE OVERLAY -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-ambient">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <rect width="40" height="40" rx="12" fill="url(#fabricGrad)" />
+            <path d="M20 9L30 26H10L20 9Z" fill="rgba(255,255,255,0.22)" />
+            <path d="M14.5 18.5L20 9L25.5 18.5H14.5Z" fill="#fff" />
+            <path d="M10 26L14.5 18.5H25.5L30 26H10Z" fill="rgba(255,255,255,0.85)" />
+            <defs>
+              <linearGradient id="fabricGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6366F1" />
+                <stop offset="0.5" stop-color="#8B5CF6" />
+                <stop offset="1" stop-color="#06B6D4" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <h1>Fabric Drive</h1>
+          <p class="auth-subtitle">Private Samba Cloud Vault • <span id="authServerIp">192.168.0.234</span></p>
+        </div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">Create User Vault</button>
+        <button class="auth-tab" data-tab="firebase" onclick="switchAuthTab('firebase')">Firebase Auth</button>
+      </div>
+
+      <div id="authError" class="auth-error hidden"></div>
+
+      <!-- Local / Samba Vault Login -->
+      <form id="loginForm" class="auth-form" onsubmit="handleLocalLogin(event)">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="loginUsername" placeholder="e.g. yusuf" value="yusuf" required autocomplete="username" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your vault password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-primary full-width">
+          <span>Unlock Personal Vault</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <div class="auth-hint">
+          <span class="dot-live"></span> Each user gets an isolated encrypted-session folder on <code>smbd/nmbd</code> (`192.168.0.234`). Only that user can access their photos &amp; files.
+        </div>
+      </form>
+
+      <!-- Create New Isolated User -->
+      <form id="registerForm" class="auth-form hidden" onsubmit="handleRegister(event)">
+        <div class="field">
+          <label>Choose Username (Isolated Folder)</label>
+          <input type="text" id="regUsername" placeholder="e.g. alex" required />
+        </div>
+        <div class="field">
+          <label>Display Name</label>
+          <input type="text" id="regDisplayName" placeholder="e.g. Alex" required />
+        </div>
+        <div class="field">
+          <label>Email (Optional / Firebase Link)</label>
+          <input type="email" id="regEmail" placeholder="alex@example.com" />
+        </div>
+        <div class="field">
+          <label>Vault Password</label>
+          <input type="password" id="regPassword" placeholder="Create password" required />
+        </div>
+        <button type="submit" class="btn-primary full-width">Create Private User Vault</button>
+      </form>
+
+      <!-- Firebase Cloud Auth -->
+      <div id="firebasePane" class="auth-form hidden">
+        <div class="firebase-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFA000"><path d="M3.89 15.672L6.255.461A.542.542 0 017.27.288l2.543 4.771zm16.794 3.692l-2.25-14a.54.54 0 00-.919-.295L3.316 19.365l7.856 4.427a1.621 1.621 0 001.588 0zM14.3 7.147l-1.82-3.482a.542.542 0 00-.96 0L3.53 17.984z"/></svg>
+          <span>Project: <strong>fabric-drive</strong> (Firebase Auth Connected)</span>
+        </div>
+        <form onsubmit="handleFirebaseEmailAuth(event)">
+          <div class="field">
+            <label>Firebase Email</label>
+            <input type="email" id="fbEmail" placeholder="yusuf@example.com" required />
+          </div>
+          <div class="field">
+            <label>Firebase Password</label>
+            <input type="password" id="fbPassword" placeholder="Password (min 6 chars)" required />
+          </div>
+          <div class="field">
+            <label>Map to Fabric Drive Username</label>
+            <input type="text" id="fbUsername" placeholder="yusuf (or leave blank for email prefix)" value="yusuf" />
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn-primary" onclick="window._fbMode='signin'">Firebase Sign In</button>
+            <button type="submit" class="btn-secondary" onclick="window._fbMode='signup'">Firebase Sign Up</button>
+          </div>
+        </form>
+        <div class="divider"><span>OR</span></div>
+        <button type="button" class="btn-google full-width" onclick="handleFirebaseGooglePopup()">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.7z"/><path fill="#FBBC05" d="M5.3 14.8c-.2-.8-.4-1.6-.4-2.5s.2-1.7.4-2.5L1.6 7C.6 9 0 11.2 0 13.5s.6 4.5 1.6 6.5l3.7-2.9z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5l-3.7 2.8C3.5 21.4 7.4 24 12 24z"/></svg>
+          <span>Continue with Google (Firebase Auth)</span>
+        </button>
+      </div>
+
+      <div class="auth-downloads">
+        <span>Get Native Apps:</span>
+        <a href="/releases/FabricDrive.dmg" download class="dl-chip">macOS .DMG</a>
+        <a href="/releases/FabricDrive.apk" download class="dl-chip">Android .APK</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION SHELL -->
+  <div id="appShell" class="app-shell hidden">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo small">
+          <svg viewBox="0 0 40 40" fill="none">
+            <rect width="40" height="40" rx="11" fill="url(#fabricGrad2)" />
+            <path d="M20 9L30 26H10L20 9Z" fill="rgba(255,255,255,0.22)" />
+            <path d="M14.5 18.5L20 9L25.5 18.5H14.5Z" fill="#fff" />
+            <path d="M10 26L14.5 18.5H25.5L30 26H10Z" fill="rgba(255,255,255,0.85)" />
+            <defs>
+              <linearGradient id="fabricGrad2" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6366F1" />
+                <stop offset="0.5" stop-color="#8B5CF6" />
+                <stop offset="1" stop-color="#06B6D4" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Fabric Drive</span>
+          <span class="brand-tag" id="sidebarVaultTag">@yusuf vault</span>
+        </div>
+      </div>
+
+      <!-- Primary "+ New" & "1-Click Backup" Buttons -->
+      <div class="primary-actions">
+        <button class="btn-new" onclick="openUploadPicker()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 5v14M5 12h14"/></svg>
+          <span>New Upload</span>
+        </button>
+        <button class="btn-backup" onclick="triggerOneClickBackup()" title="Back up all images & photos in one click with SHA-256 duplicate protection">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>1-Click Image Backup</span>
+        </button>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-view="my-drive" onclick="switchView('my-drive')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span>My Fabric Drive</span>
+        </button>
+        <button class="nav-item" data-view="photos" onclick="switchView('photos')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <span>Photos &amp; Gallery</span>
+        </button>
+        <button class="nav-item" data-view="gdrive" onclick="openGDriveModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
+          <span>Import Google Drive</span>
+          <span class="nav-badge">Sync</span>
+        </button>
+        <button class="nav-item" data-view="recent" onclick="switchView('recent')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Recent</span>
+        </button>
+        <button class="nav-item" data-view="starred" onclick="switchView('starred')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Starred</span>
+        </button>
+        <button class="nav-item" data-view="trash" onclick="switchView('trash')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span>Trash</span>
+        </button>
+        <div class="nav-divider"></div>
+        <button class="nav-item" data-view="users" onclick="openUsersModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Users &amp; Isolation</span>
+        </button>
+        <button class="nav-item" data-view="samba" onclick="openSambaModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <span>Samba &amp; Anywhere Access</span>
+        </button>
+        <button class="nav-item" data-view="apps" onclick="openAppsModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Download DMG &amp; APK</span>
+        </button>
+      </nav>
+
+      <!-- Samba & Storage Meter -->
+      <div class="storage-card">
+        <div class="samba-pill">
+          <span class="status-dot" id="sambaDot"></span>
+          <span id="sambaStatusText">smbd + nmbd active</span>
+        </div>
+        <div class="storage-header">
+          <span>User Vault Storage</span>
+          <span id="storagePercent">0%</span>
+        </div>
+        <div class="storage-bar">
+          <div class="storage-fill" id="storageFill" style="width: 2%"></div>
+        </div>
+        <div class="storage-meta" id="storageText">0 MB of 100 GB used</div>
+        <div class="storage-meta sub" id="diskFreeText">Server Disk: 186 GB Free</div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="main-area" id="dropZone">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <button class="icon-btn mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Search in your private Fabric Drive vault..." oninput="handleSearch(this.value)" />
+          <kbd>/</kbd>
+        </div>
+
+        <div class="topbar-right">
+          <button class="action-pill" onclick="triggerOneClickBackup()" title="One-Click Photo Backup">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Backup Photos</span>
+          </button>
+          <button class="action-pill gdrive" onclick="openGDriveModal()" title="Import from Google Drive">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
+            <span>Google Drive Import</span>
+          </button>
+
+          <div class="user-chip" onclick="openUsersModal()">
+            <div class="avatar" id="userAvatar">Y</div>
+            <div class="user-info">
+              <span class="user-name" id="userNameLabel">yusuf</span>
+              <span class="user-role" id="userRoleLabel">Isolated Vault</span>
+            </div>
+          </div>
+          <button class="icon-btn" onclick="logout()" title="Lock Vault & Sign Out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Action & Breadcrumb Subheader -->
+      <div class="subheader">
+        <div class="breadcrumbs" id="breadcrumbs">
+          <span class="crumb active" onclick="navigateFolder('')">My Fabric Drive</span>
+        </div>
+
+        <div class="toolbar-actions">
+          <button class="btn-subtle" onclick="promptNewFolder()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+            <span>New Folder</span>
+          </button>
+          <button class="btn-subtle hidden" id="emptyTrashBtn" onclick="emptyTrash()">
+            <span>Empty Trash</span>
+          </button>
+          <div class="layout-toggle">
+            <button class="toggle-btn active" id="gridBtn" onclick="setLayout('grid')" title="Grid view">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </button>
+            <button class="toggle-btn" id="listBtn" onclick="setLayout('list')" title="List view">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Banner for 1-Click Backup & Google Drive Sync -->
+      <div class="quick-banner" id="quickBanner">
+        <div class="qb-card" onclick="triggerOneClickBackup()">
+          <div class="qb-icon purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div>
+            <h3>One-Click Photo Backup</h3>
+            <p>Select all photos or camera roll images — auto-deduplicated into <code>Camera Backup</code></p>
+          </div>
+        </div>
+
+        <div class="qb-card" onclick="openGDriveModal()">
+          <div class="qb-icon cyan">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
+          </div>
+          <div>
+            <h3>Import Google Drive Images</h3>
+            <p>Connect Google Drive OAuth or paste shared links to pull every photo directly to Samba</p>
+          </div>
+        </div>
+
+        <div class="qb-card" onclick="openAppsModal()">
+          <div class="qb-icon emerald">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <div>
+            <h3>Native macOS .DMG &amp; Android .APK</h3>
+            <p>Install native Fabric Drive apps for macOS, Android phones, and iOS devices</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload / Backup Progress Toast -->
+      <div id="uploadProgressCard" class="upload-progress hidden">
+        <div class="up-header">
+          <span id="uploadProgressTitle">Backing up images...</span>
+          <span id="uploadProgressPct">0%</span>
+        </div>
+        <div class="storage-bar">
+          <div class="storage-fill" id="uploadProgressBar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- File Grid / List Container -->
+      <div id="filesContainer" class="files-grid"></div>
+    </main>
+  </div>
+
+  <!-- Hidden File Inputs for Normal Upload & 1-Click Image Backup -->
+  <input type="file" id="fileInput" multiple class="hidden" onchange="handleFilesSelected(this.files, 'upload')" />
+  <input type="file" id="backupInput" multiple accept="image/*,video/*" class="hidden" onchange="handleFilesSelected(this.files, 'backup')" />
+  <input type="file" id="gdriveLocalInput" multiple accept="image/*,video/*" webkitdirectory directory class="hidden" onchange="handleFilesSelected(this.files, 'gdrive')" />
+
+  <!-- LIGHTBOX MEDIA PREVIEW MODAL -->
+  <div id="previewModal" class="modal-backdrop hidden" onclick="if(event.target===this)closePreview()">
+    <div class="preview-dialog">
+      <div class="preview-header">
+        <span id="previewTitle">File Preview</span>
+        <div class="preview-actions">
+          <a id="previewDownloadBtn" href="#" download class="btn-subtle">Download</a>
+          <button class="btn-subtle" onclick="shareCurrentFile()">Share Link</button>
+          <button class="icon-btn" onclick="closePreview()">✕</button>
+        </div>
+      </div>
+      <div class="preview-body" id="previewBody"></div>
+    </div>
+  </div>
+
+  <!-- GOOGLE DRIVE IMPORTER MODAL -->
+  <div id="gdriveModal" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('gdriveModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Import Every Image from Google Drive</h2>
+        <button class="icon-btn" onclick="closeModal('gdriveModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Import all your Google Drive photos directly into your isolated Samba vault (<code>Google Drive Imports</code>).</p>
+
+        <div class="import-section">
+          <h3>Method 1: One-Click Google Drive Cloud Pull (OAuth Token)</h3>
+          <p>Sign in with Google or paste a Google Drive OAuth Access Token (`ya29...`) to automatically scan and download all `image/*` files from your Google Drive.</p>
+          <div class="field-row">
+            <input type="text" id="gdriveAccessToken" placeholder="Paste Google OAuth Access Token (ya29...) or click Connect Google" />
+            <button class="btn-primary" onclick="startGDriveOAuthImport()">Pull All Images</button>
+          </div>
+          <button class="btn-google full-width" style="margin-top:8px" onclick="connectGoogleDrivePopup()">
+            <span>Connect Google Account &amp; Auto-Import Images</span>
+          </button>
+        </div>
+
+        <div class="import-section">
+          <h3>Method 2: Paste Google Drive Share Links / File IDs</h3>
+          <p>Paste one or more Google Drive image links (`https://drive.google.com/file/d/...`) or direct image URLs (one per line):</p>
+          <textarea id="gdriveLinksInput" rows="3" placeholder="https://drive.google.com/file/d/1A2B3C.../view&#10;https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200"></textarea>
+          <button class="btn-secondary full-width" style="margin-top:8px" onclick="importGDriveLinks()">Import Listed Links to Vault</button>
+        </div>
+
+        <div class="import-section">
+          <h3>Method 3: Select Google Takeout / Google Drive Folder</h3>
+          <p>Have a synced Google Drive folder or Google Takeout export on your device? Select the folder to import every image inside it in one click.</p>
+          <button class="btn-subtle full-width" onclick="document.getElementById('gdriveLocalInput').click(); closeModal('gdriveModal')">Select Folder to Import All Images</button>
+        </div>
+
+        <div id="gdriveImportStatus" class="status-box hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS & VAULT ISOLATION MODAL -->
+  <div id="usersModal" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('usersModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>User Vault Isolation &amp; Account Manager</h2>
+        <button class="icon-btn" onclick="closeModal('usersModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Fabric Drive enforces strict per-user sandboxing. When logged in as <strong id="currentUserStrong">yusuf</strong>, only <strong id="currentUserStrong2">yusuf</strong> can access `/srv/media/fabric-drive/users/yusuf`. Other users have completely separate vaults.
+        </p>
+        <div id="usersListContainer" class="users-list"></div>
+        <hr class="modal-hr" />
+        <h3>Add Another User Vault</h3>
+        <form onsubmit="handleAdminCreateUser(event)" class="compact-form">
+          <input type="text" id="newVaultUser" placeholder="Username (e.g. sarah)" required />
+          <input type="text" id="newVaultName" placeholder="Display Name" required />
+          <input type="password" id="newVaultPass" placeholder="Password" required />
+          <button type="submit" class="btn-primary">Add User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAMBA & ANYWHERE ACCESS MODAL -->
+  <div id="sambaModal" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('sambaModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Samba (`smbd` / `nmbd`) &amp; Anywhere Access</h2>
+        <button class="icon-btn" onclick="closeModal('sambaModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Laptop Server IP</label>
+            <code>192.168.0.234</code>
+          </div>
+          <div class="info-item">
+            <label>Samba Daemons</label>
+            <code id="modalSambaDaemons">smbd: active | nmbd: active</code>
+          </div>
+          <div class="info-item">
+            <label>macOS Finder SMB URL</label>
+            <code id="modalSmbMac">smb://yusuf@192.168.0.234/fabric-drive</code>
+          </div>
+          <div class="info-item">
+            <label>Windows Explorer UNC</label>
+            <code id="modalSmbWin">\\192.168.0.234\fabric-drive</code>
+          </div>
+          <div class="info-item">
+            <label>Web &amp; Mobile API URL</label>
+            <code id="modalWebUrl">http://192.168.0.234:8090</code>
+          </div>
+          <div class="info-item">
+            <label>Remote / Anywhere URL</label>
+            <div class="field-row">
+              <input type="text" id="customServerUrlInput" placeholder="http://192.168.0.234:8090 or Cloudflare/Tailscale URL" />
+              <button class="btn-primary" onclick="saveServerEndpoint()">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NATIVE APPS (DMG / APK / iOS) MODAL -->
+  <div id="appsModal" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('appsModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Download Fabric Drive Native Apps</h2>
+        <button class="icon-btn" onclick="closeModal('appsModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="download-cards">
+          <div class="dl-card">
+            <h3>macOS Desktop App (`.dmg`)</h3>
+            <p>Native macOS Apple disk image (`FabricDrive.dmg`) with built-in Samba auto-mounter (`smb://192.168.0.234/fabric-drive`) and dark Fabric Drive UI.</p>
+            <a href="/releases/FabricDrive.dmg" download class="btn-primary full-width">Download FabricDrive.dmg</a>
+          </div>
+          <div class="dl-card">
+            <h3>Android Phone &amp; Tablet App (`.apk`)</h3>
+            <p>Signed Android package (`com.fabricdrive.com`) ready to install on any Android device with 1-Click Camera Roll Backup &amp; Firebase Auth.</p>
+            <a href="/releases/FabricDrive.apk" download class="btn-primary full-width">Download FabricDrive.apk</a>
+          </div>
+          <div class="dl-card">
+            <h3>iOS / iPadOS App &amp; PWA</h3>
+            <p>For iPhone &amp; iPad: open `http://192.168.0.234:8090` in Safari and tap <strong>Share → Add to Home Screen</strong>, or download the iOS bundle package (`com.fabric.fabricdrive`).</p>
+            <a href="/releases/FabricDrive-iOS.ipa" download class="btn-secondary full-width">Download iOS Package (.ipa)</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Modular SDK + App Controller -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
